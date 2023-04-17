@@ -1,12 +1,14 @@
 # Backend FLASK 사용법
 
+### API KEY 꼭 지우고 푸시!
+
 ## Setup
 
 1. brew로 pip, python, openai 설치.
 
 2. 레포 클론
 
-3. 
+3. 레포로 이동
 
    ```bash
    $ cd openai-quickstart-python
