@@ -11,7 +11,7 @@
 3. 레포로 이동
 
    ```bash
-   $ cd openai-quickstart-python
+   $ cd Lily
    ```
 
 4. 가상환경 생성
