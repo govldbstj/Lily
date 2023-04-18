@@ -13,7 +13,7 @@ from flask.json import JSONEncoder
 
 app = Flask(__name__)
 
-API_KEY = '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'
+API_KEY = 'YOUR_API'
 openai.api_key = API_KEY
 
 
