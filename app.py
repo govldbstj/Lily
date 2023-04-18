@@ -13,7 +13,7 @@ from flask.json import JSONEncoder
 
 app = Flask(__name__)
 
-API_KEY = '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'
+API_KEY = ''
 openai.api_key = API_KEY
 
 
@@ -37,7 +37,7 @@ Q6 = ["혼자서 할 수 있는 일을 추천해줘" , "사람들과 함께 할 
 
 # Q7. 좋아하는 것들을 골라주세요 // 할 일 추천 시 참고
 #  노래 듣기, 산책하기, 낮잠 자기, 친구 만나기, 영화보기, 요리하기, 게임하기, 책 읽기, 운동하기, 여행하기 이 중 최대 5개 선택 // case3
-Q7 = ["노래 듣기", "산책 하기", "음악 듣기","책 읽기","친구 만나기", "요리하기", "게임하기", "운동하기", "그림 그리기", "노래 부르기", "여행하기", "등산하기","영화보기", "하늘 보기", "드라이브하기"]
+Q7 = ["노래 듣기", "산책 하기", "음악 듣기","책 읽기","친구 만나기", "요리하기", "게임하기", "운동하기", "그림 그리기", "노래 부르기", "여행하기", "등산하기", "영화보기", "하늘 보기", "드라이브하기"]
 
 @app.route("/ping", methods=['GET'])
 def ping():
@@ -94,8 +94,11 @@ def advice():
 @app.route("/todo", methods=['POST'])
 def todo():
     payload = request.json
-    prompt = "내가 오늘 하루동안 사소한 할 일 하나를 \"~ 하는 건 어때요?\" 하는 형식으로 제시해줘. 예를 들어, \"제일 좋아하는 음식을 먹어보는 건 어때요?\" 처럼. 참고로 나는 " + Q1[int(payload['q1'])]+Q2[int(payload['q2'])]+Q3[int(payload['q3'])]+Q4[int(payload['q4'])] + Q6[int(payload['q6'])]
-    prompt += "나는 평소에 힘들 때 " + payload['q7'] + "를 하곤 해. 참고해서 오늘 내가 하면 좋을 일을 추천해줘. "
+    prompt = "반드시 40자 이내로 알려줘. 내가 오늘 하루동안 사소한 할 일 하나를 \"~ 하는 건 어때요?\" 하는 형식으로 제시해줘. 예를 들어, \"제일 좋아하는 음식을 먹어보는 건 어때요?\" 처럼. 참고로 나는 " + Q1[int(payload['q1'])]+Q2[int(payload['q2'])]+Q3[int(payload['q3'])]+Q4[int(payload['q4'])] + Q6[int(payload['q6'])]+"나는 평소에 힘들 때 "
+    list = payload['q7'].split(",")
+    for i in range(len(list)):
+        prompt += Q7[int(list[i])] + ", "
+    prompt +="를 하곤 해. 참고해서 오늘 내가 하면 좋을 일을 추천해줘. "
     print("{\"prompt\" : \"" + prompt + "\",", end = "")
     completion=openai.ChatCompletion.create(
     model="gpt-3.5-turbo",
@@ -113,6 +116,7 @@ def todo():
     return jsonify({
 		'text' : completion.choices[0].message.content.replace("\"", ""),
 	})
+
     
         
 
