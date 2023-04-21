@@ -4,6 +4,7 @@ import openai
 from flask import Flask, redirect, render_template, request, url_for, jsonify
 from flask.json import JSONEncoder
 import json
+import asyncio
 
 # class CustomJSONEncoder(JSONEncoder):
 # 	def default(self, obj):
@@ -13,8 +14,8 @@ import json
 
 
 app = Flask(__name__)
-CORS(app)
-API_KEY = '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'
+CORS(app,origins='*')
+API_KEY = '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'
 openai.api_key = API_KEY
 
 
@@ -45,79 +46,58 @@ def ping():
     return "pong"
 
 @app.route("/comfort", methods = ['POST'])
-def comfort():
-    
+async def comfort(): 
     payload = json.loads(request.json['value'])
-    prompt = "나에게 힘이 될 수 있는 따뜻한 이야기를 반드시 40자 이내로 해줘. 나는 " + Q1[int(payload['q1'])]+Q2[int(payload['q2'])]+Q3[int(payload['q3'])]+Q4[int(payload['q4'])]+Q5[int(payload['q5'])] + "나에게 힘이 되는 말 한 마디를 해줘."
-    print("{\"prompt\" : \"" + prompt + "\",", end = "")
-    completion=openai.ChatCompletion.create(
-    model="gpt-3.5-turbo",
-    messages=[
-    {
-        "role":"user",
-        "content": prompt,
-    }
-    ],
-    temperature= 0.8,
-    max_tokens= 100,
+    prompt = "나에게 힘이 될 수 있는 따뜻한 이야기를 반드시 40자 이내의 한 문장으로 해줘. 나는 " + Q1[int(payload['q1'])]+Q2[int(payload['q2'])]+Q3[int(payload['q3'])]+Q4[int(payload['q4'])]+Q5[int(payload['q5'])]+ "나에게 힘이 되는 말 한 마디를 해줘."
+    print("{\"prompt\" : \"" + prompt + "\",", end="")
+    completion = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=prompt,
+        temperature=0.8,
+        max_tokens=100
     )
-    print("\"completion\" : \"" + completion.choices[0].message.content + "\" }")
+    print("\"completion\" : \"" + completion.choices[0].text + "\" }")
+    return jsonify({'text': completion.choices[0].text.replace("\"", "")})
+        
     
-    return jsonify({
-		'text' : completion.choices[0].message.content.replace("\"", ""),
-	})
-        
-        
 @app.route("/advice", methods=['POST'])
-def advice():
+async def advice():
     payload = json.loads(request.json['value'])
-    prompt = "오늘의 조언을 해줘. 반드시 40자 이내로 해줘. 나는 " + Q1[int(payload['q1'])]+Q2[int(payload['q2'])]+Q3[int(payload['q3'])]+Q4[int(payload['q4'])]
+    prompt = "오늘의 조언을 해줘. 반드시 40자 이내의 한 문장으로 해줘. 나는 " + Q1[int(payload['q1'])]+Q2[int(payload['q2'])]+Q3[int(payload['q3'])]+Q4[int(payload['q4'])]
     print("{\"prompt\" : \"" + prompt + "\",", end = "")
-    completion=openai.ChatCompletion.create(
-    model="gpt-3.5-turbo",
-    messages=[
-    {
-        "role":"user",
-        "content": prompt,
-    }
-    ],
-    temperature= 0.8,
-    max_tokens= 100,
+    completion = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=prompt,
+        temperature=0.8,
+        max_tokens=100,
     )
-    print("\"completion\" : \"" + completion.choices[0].message.content + "\" }")
-    
+    print("\"completion\" : \"" + completion.choices[0].text + "\" }")
+
     return jsonify({
-		'text' : completion.choices[0].message.content.replace("\"", ""),
+		'text' : completion.choices[0].text.replace("\"", ""),
 	})
         
         
         
 @app.route("/todo", methods=['POST'])
-def todo():
+async def todo():
     payload = json.loads(request.json['value'])
-    prompt = "반드시 40자 이내로 알려줘. 내가 오늘 하루동안 사소한 할 일 하나를 \"~ 하는 건 어때요?\" 하는 형식으로 제시해줘. 예를 들어, \"제일 좋아하는 음식을 먹어보는 건 어때요?\" 처럼. 참고로 나는 " + Q1[int(payload['q1'])]+Q2[int(payload['q2'])]+Q3[int(payload['q3'])]+Q4[int(payload['q4'])] + Q6[int(payload['q6'])]+"나는 평소에 힘들 때 "
-    data = payload['q7'].strip("]").strip("[")
-    print("data : ", data)
-    list = data.split(",")
+    prompt = "반드시 40자 이내의 한 문장으로 알려줘. 내가 오늘 하루동안 사소한 할 일 하나를 \"~ 하는 건 어때요?\" 하는 형식으로 제시해줘. 예를 들어, \"제일 좋아하는 음식을 먹어보는 건 어때요?\" 처럼. 참고로 나는 " + Q1[int(payload['q1'])]+Q2[int(payload['q2'])]+Q3[int(payload['q3'])]+Q4[int(payload['q4'])] + Q6[int(payload['q6'])]+"나는 평소에 힘들 때 "
+    list=payload['q7']
     for i in range(len(list)):
         prompt += Q7[int(list[i])] + ", "
     prompt +="를 하곤 해. 참고해서 오늘 내가 하면 좋을 일을 추천해줘. "
     print("{\"prompt\" : \"" + prompt + "\",", end = "")
-    completion=openai.ChatCompletion.create(
-    model="gpt-3.5-turbo",
-    messages=[
-    {
-        "role":"user",
-        "content": prompt,
-    }
-    ],
-    temperature= 0.8,
-    max_tokens= 100,
+    completion = openai.Completion.create(
+        engine="text-davinci-003",
+        prompt=prompt,
+        temperature=0.8,
+        max_tokens=100,
     )
-    print("\"completion\" : \"" + completion.choices[0].message.content + "\" }")
+    print("\"completion\" : \"" + completion.choices[0].text + "\" }")
     
     return jsonify({
-		'text' : completion.choices[0].message.content.replace("\"", ""),
+		'text' : completion.choices[0].text.replace("\"", ""),
 	})
 
     
