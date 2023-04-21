@@ -15,7 +15,7 @@ import asyncio
 
 app = Flask(__name__)
 CORS(app,origins='*')
-API_KEY = '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'
+API_KEY = 'APIKEY'
 openai.api_key = API_KEY
 
 
